@@ -1,0 +1,18 @@
+# Nix build artifacts
+result
+*.drv
+
+# Editor junk
+*.swp
+*.swo
+*.bak
+*~
+
+# Secrets (never commit these)
+secrets.nix
+*.key
+*.pem
+*.age
+
+# OS junk
+.DS_Store
