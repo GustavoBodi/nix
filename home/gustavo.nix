@@ -42,6 +42,16 @@
 
   programs.ssh = {
     enable = true;
+  
+    enableDefaultConfig = false;
+  
+    matchBlocks."*" = {
+      forwardAgent = false;
+      compression = true;
+      serverAliveInterval = 60;
+      serverAliveCountMax = 3;
+      hashKnownHosts = true;
+    };
   };
 
   services.ssh-agent = {
@@ -114,16 +124,16 @@
       rebuild = "sudo nixos-rebuild switch";
     };
 
-    initExtraFirst = ''
-      source ${pkgs.zsh-powerlevel10k}/share/zsh-powerlevel10k/powerlevel10k.zsh-theme
-    '';
-
-    initExtra = lib.mkAfter ''
-      source ~/.config/zsh/p10k.zsh
-
-      bindkey -e
-    '';
-
+    initContent = lib.mkMerge [
+      (lib.mkBefore ''
+        source ${pkgs.zsh-powerlevel10k}/share/zsh-powerlevel10k/powerlevel10k.zsh-theme
+      '')
+    
+      (lib.mkAfter ''
+        source ~/.config/zsh/p10k.zsh
+        bindkey -e
+      '')
+    ];
   };
 
   programs.neovim = {

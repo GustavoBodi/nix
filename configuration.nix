@@ -110,12 +110,12 @@
 
   services.dbus.enable = true;
   services.xserver.enable = true;
-  services.xserver.libinput.enable = true;
+  services.libinput.enable = true;
   services.xserver.displayManager.startx.enable = true;
   services.xserver.xkb.layout = "us";
   services.xserver.xkb.variant = "intl";
   services.xserver.displayManager.lightdm.enable = true;
-  services.xserver.displayManager.gdm.enable = false;
+  services.displayManager.gdm.enable = false;
 
 
   services.xserver.windowManager.dwm = {
@@ -140,7 +140,7 @@
     wireplumber.enable = true;
   };
 
-  hardware.pulseaudio.enable = false;
+  services.pulseaudio.enable = false;
 
   environment.systemPackages = with pkgs; [
     pavucontrol
