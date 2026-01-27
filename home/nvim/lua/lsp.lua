@@ -1,4 +1,3 @@
-local lspconfig = require("lspconfig")
 local cmp = require("cmp")
 
 vim.diagnostic.config({
@@ -18,37 +17,42 @@ local capabilities = require("cmp_nvim_lsp").default_capabilities()
 
 local on_attach = function(_, bufnr)
   local opts = { noremap = true, silent = true, buffer = bufnr }
-  local keymap = vim.keymap.set
+  local map = vim.keymap.set
 
-  keymap("n", "gD", vim.lsp.buf.declaration, opts)
-  keymap("n", "gd", vim.lsp.buf.definition, opts)
-  keymap("n", "gi", vim.lsp.buf.implementation, opts)
-  keymap("n", "gt", vim.lsp.buf.type_definition, opts)
-  keymap("n", "gr", vim.lsp.buf.references, opts)
-  keymap("n", "K", vim.lsp.buf.hover, opts)
-  keymap("n", "<C-k>", vim.lsp.buf.signature_help, opts)
+  map("n", "gD", vim.lsp.buf.declaration, opts)
+  map("n", "gd", vim.lsp.buf.definition, opts)
+  map("n", "gi", vim.lsp.buf.implementation, opts)
+  map("n", "gt", vim.lsp.buf.type_definition, opts)
+  map("n", "gr", vim.lsp.buf.references, opts)
+  map("n", "K", vim.lsp.buf.hover, opts)
+  map("n", "<C-k>", vim.lsp.buf.signature_help, opts)
 
-  keymap("n", "<space>rn", vim.lsp.buf.rename, opts)
-  keymap("n", "<space>f", vim.lsp.buf.format, opts)
+  map("n", "<space>rn", vim.lsp.buf.rename, opts)
+  map("n", "<space>f", vim.lsp.buf.format, opts)
 
-  keymap("n", "<space>e", vim.diagnostic.open_float, opts)
-  keymap("n", "[d", vim.diagnostic.goto_prev, opts)
-  keymap("n", "]d", vim.diagnostic.goto_next, opts)
-  keymap("n", "<space>q", vim.diagnostic.setloclist, opts)
-  keymap("n", "<A-CR>", vim.lsp.buf.code_action, opts)
+  map("n", "<space>e", vim.diagnostic.open_float, opts)
+  map("n", "[d", vim.diagnostic.goto_prev, opts)
+  map("n", "]d", vim.diagnostic.goto_next, opts)
+  map("n", "<space>q", vim.diagnostic.setloclist, opts)
+  map("n", "<A-CR>", vim.lsp.buf.code_action, opts)
 end
 
+-- Servers
 local servers = {
   "clangd",
   "csharp_ls",
   "pyright",
-  "tsserver",
+  "ts_ls",
   "bashls",
   "nil_ls",
 }
 
 for _, server in ipairs(servers) do
-  lspconfig[server].setup({
+  vim.lsp.config(server, {
     capabilities = capabilities,
+    on_attach = on_attach,
   })
+
+  vim.lsp.enable(server)
 end
+

@@ -1,14 +1,13 @@
-vim.o.showtabline = 2
-vim.o.termguicolors = true
-vim.o.background = "dark"
-vim.o.termguicolors = true
+vim.opt.showtabline = 2
+vim.opt.termguicolors = true
+vim.opt.background = "dark"
 
 -- Basic UX
-vim.o.number = true
-vim.o.relativenumber = true
-vim.o.signcolumn = "yes"
-vim.o.updatetime = 300
-vim.o.clipboard = "unnamedplus"
+vim.opt.number = true
+vim.opt.relativenumber = true
+vim.opt.signcolumn = "yes"
+vim.opt.updatetime = 300
+vim.opt.clipboard = "unnamedplus"
 
 -- Load modules
 require("keymaps")

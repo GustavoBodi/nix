@@ -34,15 +34,10 @@ keymap("x", "<A-k>", ":move '<-2<CR>gv-gv", opts)
 
 -- Clangd
 keymap("n", "gh", "<Cmd>ClangdSwitchSourceHeader<CR>", opts)
-
 keymap('n', '<A-i>', ":ToggleTerm<CR>", opts)
 keymap('t', '<A-i>', "<Cmd>ToggleTerm<CR>", opts)
 keymap("n", "ff", ":Telescope find_files<cr>", opts)
 keymap("n", "fg", ":Telescope live_grep<cr>", opts)
 keymap("n", "fb", ":Telescope file_browser<cr>", opts)
 keymap("n", "fh", ":Telescope help_tags<cr>", opts)
-
--- User commands
-vim.api.nvim_create_user_command("Compile", "!./compile.sh", {})
-vim.api.nvim_create_user_command("Doc", "!doc", {})
 

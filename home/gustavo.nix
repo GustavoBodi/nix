@@ -10,7 +10,7 @@
     jetbrains.pycharm
     jetbrains.rider
     jetbrains.webstorm
-    dotnet-sdk_8
+    dotnet-sdk_9
     cmake
     gdb
     xorg.xrandr
@@ -19,6 +19,11 @@
     zsh-powerlevel10k
     calibre
     xsecurelock
+    killall
+    xclip
+
+    discord
+    spotify
 
     # Neovim
     llvmPackages.clang

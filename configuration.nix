@@ -13,6 +13,7 @@
 
   nixpkgs.config.allowUnfree = true;
 
+  boot.blacklistedKernelModules = [ "pcspkr" ];
   home-manager.useGlobalPkgs = true;
   home-manager.useUserPackages = true;
   home-manager.users.gustavo = import ./home/gustavo.nix;
@@ -175,8 +176,14 @@
   # networking.firewall.allowedTCPPorts = [ ... ];
   # networking.firewall.allowedUDPPorts = [ ... ];
   # Or disable the firewall altogether.
-  # networking.firewall.enable = false;
+  networking.firewall.enable = false;
+  security.apparmor.enable = true;
+  security.sudo.enable = true;
+  services.openssh.settings.PasswordAuthentication = false;
+  security.lockKernelModules = false;
+  security.protectKernelImage = true;
 
+  environment.variables.EDITOR = "nvim";
   # Copy the NixOS configuration file and link it from the resulting system
   # (/run/current-system/configuration.nix). This is useful in case you
   # accidentally delete configuration.nix.
