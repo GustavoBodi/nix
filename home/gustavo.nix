@@ -7,8 +7,6 @@
     feh
     kitty
     jetbrains.clion
-    jetbrains.pycharm
-    jetbrains.rider
     jetbrains.webstorm
     dotnet-sdk_9
     cmake
@@ -21,6 +19,31 @@
     xsecurelock
     killall
     xclip
+    nodejs
+    vscode
+    unzip
+    zip
+    steam-run
+    docker
+    flameshot
+    libreoffice
+
+    (symlinkJoin {
+      name = "rider-steam";
+      paths = [ jetbrains.rider ];
+      buildInputs = [ makeWrapper ];
+      postBuild = ''
+        mv $out/bin/rider $out/bin/.rider-unwrapped
+    
+        cat > $out/bin/rider <<EOF
+        #!/usr/bin/env bash
+        exec ${steam-run}/bin/steam-run \
+          $out/bin/.rider-unwrapped "\$@"
+        EOF
+    
+        chmod +x $out/bin/rider
+      '';
+    })
 
     discord
     spotify
@@ -39,6 +62,8 @@
     shfmt
     nil
   ];
+
+
 
   programs.ssh = {
     enable = true;

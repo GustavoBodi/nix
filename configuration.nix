@@ -19,6 +19,11 @@
   home-manager.users.gustavo = import ./home/gustavo.nix;
   users.users.gustavo.shell = pkgs.zsh;
 
+  virtualisation.docker.enable = true;
+  virtualisation.docker.daemon.settings = {
+    dns = [ "1.1.1.1" "8.8.8.8" ];
+  };
+
   # Use the systemd-boot EFI boot loader.
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
@@ -99,7 +104,7 @@
 
   users.users.gustavo = {
     isNormalUser = true;
-    extraGroups = [ "wheel" "networkmanager" "audio" ];
+    extraGroups = [ "wheel" "networkmanager" "audio" "docker" ];
     initialPassword = "";
     packages = with pkgs; [
       tree
@@ -114,7 +119,18 @@
   services.xserver.displayManager.startx.enable = true;
   services.xserver.xkb.layout = "us";
   services.xserver.xkb.variant = "intl";
-  services.xserver.displayManager.lightdm.enable = true;
+  services.xserver.displayManager.lightdm = {
+    enable = true;
+  
+    greeters.gtk = {
+      enable = true;
+  
+      extraConfig = ''
+        background=/etc/nixos/home/wallpapers/course_of_the_empire.jpg
+      '';
+    };
+  };
+
   services.displayManager.gdm.enable = false;
 
 
@@ -155,7 +171,11 @@
     firefox
     kitty
     wget
+    direnv
   ];
+
+  programs.direnv.enable = true;
+  programs.direnv.nix-direnv.enable = true;
 
   programs.zsh.enable = true;
 
