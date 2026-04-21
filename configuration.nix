@@ -12,14 +12,23 @@
     ];
 
   nixpkgs.config.allowUnfree = true;
+  nix.settings.experimental-features = [ "nix-command" "flakes" ];
+  nix.settings.sandbox = true;
+  nix.settings.allowed-users = [ "@wheel" ];
+  nix.settings.trusted-users = [ "root" ];
+  nix.settings.auto-optimise-store = true;
 
   boot.blacklistedKernelModules = [ "pcspkr" ];
   home-manager.useGlobalPkgs = true;
   home-manager.useUserPackages = true;
   home-manager.users.gustavo = import ./home/gustavo.nix;
+
   users.users.gustavo.shell = pkgs.zsh;
+  users.mutableUsers = false;
 
   virtualisation.docker.enable = true;
+  virtualisation.docker.rootless.enable = true;
+  virtualisation.docker.rootless.setSocketVariable = true;
   virtualisation.docker.daemon.settings = {
     dns = [ "1.1.1.1" "8.8.8.8" ];
   };
@@ -33,21 +42,11 @@
   # Configure network connections interactively with nmcli or nmtui.
   networking.networkmanager.enable = true;
 
-  # Set your time zone.
-  time.timeZone = "Americas/Sao_Paulo";
+  networking.nftables.enable = true;
 
-  # Configure network proxy if necessary
-  # networking.proxy.default = "http://user:password@proxy:port/";
-  # networking.proxy.noProxy = "127.0.0.1,localhost,internal.domain";
+  time.timeZone = "America/Sao_Paulo";
 
-  # Select internationalisation properties.
   i18n.defaultLocale = "en_US.UTF-8";
-  # console = {
-  #   font = "Lat2-Terminus16";
-  #   keyMap = "us";
-  #   useXkbConfig = true; # use xkb.options in tty.
-  # };
-
 
   fonts = {
     enableDefaultPackages = true;
@@ -78,7 +77,7 @@
   };
 
   #### NVIDIA driver
-  services.xserver.videoDrivers = [ "nvidia" ];
+  # services.xserver.videoDrivers = [ "nvidia" ];
 
   hardware.nvidia = {
     # Use the proprietary driver
@@ -98,50 +97,24 @@
     package = config.boot.kernelPackages.nvidiaPackages.stable;
   };
 
-  services.xserver.screenSection = ''
-    Option "metamodes" "DP-0: 1920x1080_120 +0+0 { ForceFullCompositionPipeline=On }, HDMI-0: 1920x1080_75 +1920+0 { ForceFullCompositionPipeline=On }"
-  '';
-
   users.users.gustavo = {
     isNormalUser = true;
-    extraGroups = [ "wheel" "networkmanager" "audio" "docker" ];
-    initialPassword = "";
-    packages = with pkgs; [
+    extraGroups = [ "wheel" "networkmanager" "audio" ];
+      hashedPasswordFile = "/etc/nixos/secrets/gustavo-password.hash";
+      packages = with pkgs; [
       tree
     ];
   };
 
-  security.sudo.wheelNeedsPassword = false;
+  system.autoUpgrade = {
+    enable = true;
+    allowReboot = false;
+  };
+
+  security.sudo.wheelNeedsPassword = true;
 
   services.dbus.enable = true;
-  services.xserver.enable = true;
   services.libinput.enable = true;
-  services.xserver.displayManager.startx.enable = true;
-  services.xserver.xkb.layout = "us";
-  services.xserver.xkb.variant = "intl";
-  services.xserver.displayManager.lightdm = {
-    enable = true;
-  
-    greeters.gtk = {
-      enable = true;
-  
-      extraConfig = ''
-        background=/etc/nixos/home/wallpapers/course_of_the_empire.jpg
-      '';
-    };
-  };
-
-  services.displayManager.gdm.enable = false;
-
-
-  services.xserver.windowManager.dwm = {
-    enable = true;
-    package = pkgs.dwm.overrideAttrs (old: {
-      postPatch = (old.postPatch or "") + ''
-        cp ${./dwm/config.h} config.h
-      '';
-    });
-  };
 
   # Sound
   security.rtkit.enable = true;
@@ -159,14 +132,15 @@
   services.pulseaudio.enable = false;
 
   environment.systemPackages = with pkgs; [
+    bemenu
+    wl-clipboard
+    mako
+    grim
+    slurp
     pavucontrol
     helvum
     vim
     neovim
-    dmenu
-    xorg.xinit
-    xorg.xsetroot
-    feh
     git
     firefox
     kitty
@@ -179,30 +153,63 @@
 
   programs.zsh.enable = true;
 
-  # Some programs need SUID wrappers, can be configured further or are
-  # started in user sessions.
-  # programs.mtr.enable = true;
-  # programs.gnupg.agent = {
-  #   enable = true;
-  #   enableSSHSupport = true;
-  # };
+  nix.gc = {
+    automatic = true;
+    dates = "weekly";
+    options = "--delete-older-than 14d";
+  };
 
-  # List services that you want to enable:
+  programs.river-classic = {
+    enable = true;
+    xwayland.enable = true;
+  };
+
+  xdg.portal = {
+    enable = true;
+    wlr.enable = true;
+  };
 
   # Enable the OpenSSH daemon.
-  # services.openssh.enable = true;
+  services.openssh.enable = false;
 
   # Open ports in the firewall.
   # networking.firewall.allowedTCPPorts = [ ... ];
   # networking.firewall.allowedUDPPorts = [ ... ];
   # Or disable the firewall altogether.
-  networking.firewall.enable = false;
-  security.apparmor.enable = true;
+  networking.firewall.enable = true;
+  security.apparmor = {
+    enable = true;
+    packages = with pkgs; [
+      apparmor-profiles
+    ];
+    killUnconfinedConfinables = true;
+  };
+  services.dbus.apparmor = "required";
   security.sudo.enable = true;
+  security.audit.enable = true;
+  security.auditd.enable = true;
   services.openssh.settings.PasswordAuthentication = false;
-  security.lockKernelModules = false;
+  services.openssh.settings.PermitRootLogin = "no";
+  security.lockKernelModules = true;
   security.protectKernelImage = true;
+  security.polkit.enable = true;
 
+  services.greetd = {
+    enable = true;
+    settings = {
+      default_session = {
+        user = "greeter";
+        command = ''
+          ${pkgs.tuigreet}/bin/tuigreet \
+            --time \
+            --remember \
+            --asterisks \
+            --user-menu \
+            --cmd river
+        '';
+      };
+    };
+  };
   environment.variables.EDITOR = "nvim";
   # Copy the NixOS configuration file and link it from the resulting system
   # (/run/current-system/configuration.nix). This is useful in case you

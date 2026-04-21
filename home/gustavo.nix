@@ -4,29 +4,51 @@
   programs.kitty.enable = true;
 
   home.packages = with pkgs; [
-    feh
+    grim
+    slurp
+    satty
+
+    (writeShellScriptBin "flameshot" ''
+      mkdir -p "$HOME/Pictures/Screenshots"
+      file="$HOME/Pictures/Screenshots/$(date +%F-%H%M%S).png"
+      grim -g "$(slurp)" "$file" && satty --filename "$file" --fullscreen
+    '')
+
+    wlr-randr
+    unar
+    swaybg
+    swaylock
+    wl-clipboard
+    playerctl
+    python3
     kitty
-    jetbrains.clion
     jetbrains.webstorm
-    dotnet-sdk_9
+    jetbrains.rust-rover
+    dotnet-sdk_10
+    dotnetCorePackages.sdk_10_0
     cmake
     gdb
-    xorg.xrandr
     rtorrent
     zathura
     zsh-powerlevel10k
     calibre
-    xsecurelock
     killall
-    xclip
     nodejs
     vscode
     unzip
     zip
     steam-run
     docker
-    flameshot
     libreoffice
+    openvpn
+    openssl
+    neofetch
+    github-cli
+    azure-cli
+    bicep
+    terraform
+    gnumake
+    jq
 
     (symlinkJoin {
       name = "rider-steam";
@@ -42,6 +64,24 @@
         EOF
     
         chmod +x $out/bin/rider
+      '';
+    })
+
+
+    (symlinkJoin {
+      name = "clion-steam";
+      paths = [ jetbrains.clion ];
+      buildInputs = [ makeWrapper ];
+      postBuild = ''
+        mv $out/bin/clion $out/bin/.clion-unwrapped
+    
+        cat > $out/bin/clion <<EOF
+        #!/usr/bin/env bash
+        exec ${steam-run}/bin/steam-run \
+          $out/bin/.clion-unwrapped "\$@"
+        EOF
+    
+        chmod +x $out/bin/clion
       '';
     })
 
@@ -63,8 +103,6 @@
     nil
   ];
 
-
-
   programs.ssh = {
     enable = true;
   
@@ -83,33 +121,79 @@
     enable = true;
   };
 
-  xsession.enable = true;
-  xsession.initExtra = lib.mkAfter ''
-    # Monitor layout
-    xrandr \
-      --output DP-0 --mode 1920x1080 --rate 120 --pos 0x0 --rotate normal \
-      --output HDMI-0 --mode 1920x1080 --rate 75 --pos 1920x0 --rotate left
-
-    # Wallpaper
-    feh --bg-fill ${./wallpapers/course_of_the_empire.jpg}
-  '';
-
-  services.picom = {
+  wayland.windowManager.river = {
     enable = true;
+    package = null;
+    xwayland.enable = false;
+    systemd.enable = true;
+  
+  extraConfig = ''
+    riverctl keyboard-layout -variant intl us
 
-    backend = "glx";
-    vSync = true;
+    sh -c 'sleep 1; wlr-randr \
+      --output DP-1 --mode 1920x1080@144.001007Hz \
+      --output HDMI-A-1 --transform 90 --right-of DP-1' &
 
-    settings = {
-      corner-radius = 6;
+    riverctl set-repeat 50 300
+    riverctl background-color 0x282828
+    riverctl border-width 1
+    riverctl border-color-focused 0xcc241d
+    riverctl border-color-unfocused 0x504945
 
-      inactive-opacity = 0.95;
-      active-opacity = 1.0;
+    riverctl default-layout rivertile
+    rivertile -view-padding 1 -outer-padding 1 &
 
-      frame-opacity = 1.0;
-      shadow = true;
-    };
+    swaybg -i ${./wallpapers/course_of_the_empire.jpg} -m fill &
+    mako &
 
+    # Applications
+    riverctl map normal Super Return spawn "kitty"
+    riverctl map normal Super D spawn "bemenu-run"
+    riverctl map normal Super B spawn "firefox"
+    riverctl map normal Super F12 spawn "swaylock -f"
+
+    # Media
+    riverctl map normal None XF86AudioPlay spawn "playerctl play-pause"
+    riverctl map normal None XF86AudioNext spawn "playerctl next"
+    riverctl map normal None XF86AudioPrev spawn "playerctl previous"
+
+    # Focus / stack
+    riverctl map normal Super J focus-view next
+    riverctl map normal Super K focus-view previous
+    riverctl map normal Super E zoom
+
+    # DWM-like main area controls via rivertile
+    riverctl map normal Super H send-layout-cmd rivertile "main-ratio -0.05"
+    riverctl map normal Super L send-layout-cmd rivertile "main-ratio +0.05"
+    riverctl map normal Super I send-layout-cmd rivertile "main-count +1"
+    riverctl map normal Super P send-layout-cmd rivertile "main-count -1"
+
+    # Floating / fullscreen
+    riverctl map normal Super Shift Space toggle-float
+    riverctl map normal Super M toggle-fullscreen
+
+    # Close / exit
+    riverctl map normal Super Q close
+    riverctl map normal Super+Shift Q exit
+
+    # Output focus / send view to output
+    riverctl map normal Super Comma focus-output previous
+    riverctl map normal Super Period focus-output next
+    riverctl map normal Super+Shift Comma send-to-output -current-tags previous
+    riverctl map normal Super+Shift Period send-to-output -current-tags next
+    riverctl focus-output DP-1
+    riverctl send-layout-cmd rivertile "main-location left"
+
+        # Tags 1..9, matching DWM-style behavior
+    for i in 1 2 3 4 5 6 7 8 9; do
+      tag=$((1 << ($i - 1)))
+
+      riverctl map normal Super $i set-focused-tags $tag
+      riverctl map normal Super+Control $i toggle-focused-tags $tag
+      riverctl map normal Super+Shift $i set-view-tags $tag
+      riverctl map normal Super+Control+Shift $i toggle-view-tags $tag
+    done
+  '';
   };
 
   xdg.configFile = {
