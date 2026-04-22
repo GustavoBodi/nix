@@ -37,6 +37,34 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
+  boot.kernel.sysctl = {
+    "kernel.kptr_restrict" = 2;
+    "kernel.dmesg_restrict" = 1;
+    "fs.protected_fifos" = 2;
+    "fs.protected_regular" = 2;
+    "kernel.unprivileged_bpf_disabled" = 1;
+    "kernel.perf_event_paranoid" = 3;
+    "kernel.yama.ptrace_scope" = 2;
+    "net.ipv4.conf.all.accept_redirects" = 0;
+    "net.ipv4.conf.default.accept_redirects" = 0;
+    "net.ipv4.conf.all.send_redirects" = 0;
+    "net.ipv4.conf.default.send_redirects" = 0;
+    "net.ipv4.tcp_syncookies" = 1;
+    "net.ipv6.conf.all.accept_redirects" = 0;
+    "net.ipv6.conf.default.accept_redirects" = 0;
+  };
+  
+  systemd.coredump.enable = false;
+  programs.firejail.enable = true;
+  
+  security.sudo.extraConfig = ''
+    Defaults timestamp_timeout=5
+    Defaults passwd_timeout=1
+    Defaults env_reset
+    Defaults use_pty
+    Defaults logfile=/var/log/sudo.log
+  '';
+
   networking.hostName = "nixos"; # Define your hostname.
 
   # Configure network connections interactively with nmcli or nmtui.
@@ -177,14 +205,7 @@
   # networking.firewall.allowedUDPPorts = [ ... ];
   # Or disable the firewall altogether.
   networking.firewall.enable = true;
-  security.apparmor = {
-    enable = true;
-    packages = with pkgs; [
-      apparmor-profiles
-    ];
-    killUnconfinedConfinables = true;
-  };
-  services.dbus.apparmor = "required";
+  security.apparmor.enable = true;
   security.sudo.enable = true;
   security.audit.enable = true;
   security.auditd.enable = true;

@@ -3,14 +3,79 @@
 {
   programs.kitty.enable = true;
 
+  programs.waybar = {
+    enable = true;
+    systemd.enable = true;
+
+    settings = {
+      mainBar = {
+        layer = "top";
+        position = "top";
+        height = 24;
+
+        modules-left = [ "river/tags" ];
+        modules-center = [ "river/window" ];
+        modules-right = [ "clock" ];
+
+        "river/tags" = {
+          num-tags = 9;
+          tag-labels = [ "1" "2" "3" "4" "5" "6" "7" "8" "9" ];
+        };
+
+        "river/window" = {
+          max-length = 80;
+        };
+
+        clock = {
+          format = "{:%Y-%m-%d %H:%M}";
+        };
+      };
+    };
+
+    style = ''
+      * {
+        border: none;
+        border-radius: 0;
+        font-family: monospace;
+        font-size: 12px;
+        min-height: 0;
+      }
+
+      window#waybar {
+        background: #111111;
+        color: #dddddd;
+      }
+
+      #tags button {
+        padding: 0 8px;
+        background: transparent;
+        color: #888888;
+      }
+
+      #tags button.focused {
+        background: #333333;
+        color: #ffffff;
+      }
+
+      #tags button.occupied {
+        color: #dddddd;
+      }
+
+      #window, #clock {
+        padding: 0 8px;
+      }
+    '';
+  };
+
   home.packages = with pkgs; [
     grim
     slurp
     satty
+    kanshi
 
     (writeShellScriptBin "flameshot" ''
-      mkdir -p "$HOME/Pictures/Screenshots"
-      file="$HOME/Pictures/Screenshots/$(date +%F-%H%M%S).png"
+      mkdir -p "$HOME/screenshots"
+      file="$HOME/screenshots/$(date +%F-%H%M%S).png"
       grim -g "$(slurp)" "$file" && satty --filename "$file" --fullscreen
     '')
 
@@ -22,8 +87,7 @@
     playerctl
     python3
     kitty
-    jetbrains.webstorm
-    jetbrains.rust-rover
+    # jetbrains.webstorm
     dotnet-sdk_10
     dotnetCorePackages.sdk_10_0
     cmake
@@ -44,9 +108,7 @@
     openssl
     neofetch
     github-cli
-    azure-cli
-    bicep
-    terraform
+    # azure-cli
     gnumake
     jq
 
@@ -86,7 +148,13 @@
     })
 
     discord
-    spotify
+
+    (writeShellScriptBin "spotify" ''
+      exec ${pkgs.spotify}/bin/spotify \
+        --enable-features=UseOzonePlatform \
+        --ozone-platform=wayland \
+        "$@"
+    '')
 
     # Neovim
     llvmPackages.clang
@@ -121,18 +189,37 @@
     enable = true;
   };
 
+  services.kanshi = {
+    enable = true;
+    settings = [
+      {
+        profile.name = "dual";
+        profile.outputs = [
+          {
+            criteria = "DP-1";
+            mode = "1920x1080@144.001007Hz";
+            position = "0,0";
+            status = "enable";
+          }
+          {
+            criteria = "HDMI-A-1";
+            transform = "90";
+            position = "1920,0";
+            status = "enable";
+          }
+        ];
+      }
+    ];
+  };
+
   wayland.windowManager.river = {
     enable = true;
     package = null;
-    xwayland.enable = false;
+    xwayland.enable = true;
     systemd.enable = true;
   
   extraConfig = ''
     riverctl keyboard-layout -variant intl us
-
-    sh -c 'sleep 1; wlr-randr \
-      --output DP-1 --mode 1920x1080@144.001007Hz \
-      --output HDMI-A-1 --transform 90 --right-of DP-1' &
 
     riverctl set-repeat 50 300
     riverctl background-color 0x282828
@@ -150,7 +237,8 @@
     riverctl map normal Super Return spawn "kitty"
     riverctl map normal Super D spawn "bemenu-run"
     riverctl map normal Super B spawn "firefox"
-    riverctl map normal Super F12 spawn "swaylock -f"
+    riverctl map normal Super F12 spawn "swaylock -f -i ${./wallpapers/course_of_the_empire.jpg} -s fill"
+
 
     # Media
     riverctl map normal None XF86AudioPlay spawn "playerctl play-pause"
