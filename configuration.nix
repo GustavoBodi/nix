@@ -105,7 +105,7 @@
   };
 
   #### NVIDIA driver
-  # services.xserver.videoDrivers = [ "nvidia" ];
+  services.xserver.videoDrivers = [ "nvidia" ];
 
   hardware.nvidia = {
     # Use the proprietary driver

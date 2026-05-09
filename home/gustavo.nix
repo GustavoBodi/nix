@@ -74,20 +74,30 @@
     kanshi
 
     (writeShellScriptBin "flameshot" ''
+      set -euo pipefail
+    
       mkdir -p "$HOME/screenshots"
       file="$HOME/screenshots/$(date +%F-%H%M%S).png"
-      grim -g "$(slurp)" "$file" && satty --filename "$file" --fullscreen
+    
+      grim -g "$(slurp)" "$file"
+    
+      satty \
+        --filename "$file" \
+        --fullscreen \
+        --copy-command "${pkgs.wl-clipboard}/bin/wl-copy --type image/png"
     '')
-
+    tmux
     wlr-randr
     unar
+    swayimg
     swaybg
     swaylock
     wl-clipboard
     playerctl
     python3
     kitty
-    # jetbrains.webstorm
+    isabelle
+    jetbrains.webstorm
     dotnet-sdk_10
     dotnetCorePackages.sdk_10_0
     cmake
@@ -97,17 +107,17 @@
     zsh-powerlevel10k
     calibre
     killall
-    nodejs
+    # nodejs
     vscode
     unzip
     zip
-    steam-run
+    # steam-run
     docker
     libreoffice
     openvpn
     openssl
     neofetch
-    github-cli
+    # github-cli
     # azure-cli
     gnumake
     jq
@@ -130,22 +140,22 @@
     })
 
 
-    (symlinkJoin {
-      name = "clion-steam";
-      paths = [ jetbrains.clion ];
-      buildInputs = [ makeWrapper ];
-      postBuild = ''
-        mv $out/bin/clion $out/bin/.clion-unwrapped
-    
-        cat > $out/bin/clion <<EOF
-        #!/usr/bin/env bash
-        exec ${steam-run}/bin/steam-run \
-          $out/bin/.clion-unwrapped "\$@"
-        EOF
-    
-        chmod +x $out/bin/clion
-      '';
-    })
+    # (symlinkJoin {
+    #   name = "clion-steam";
+    #   paths = [ jetbrains.clion ];
+    #   buildInputs = [ makeWrapper ];
+    #   postBuild = ''
+    #     mv $out/bin/clion $out/bin/.clion-unwrapped
+    # 
+    #     cat > $out/bin/clion <<EOF
+    #     #!/usr/bin/env bash
+    #     exec ${steam-run}/bin/steam-run \
+    #       $out/bin/.clion-unwrapped "\$@"
+    #     EOF
+    # 
+    #     chmod +x $out/bin/clion
+    #   '';
+    # })
 
     discord
 
@@ -170,6 +180,22 @@
     shfmt
     nil
   ];
+
+  programs.tmux = {
+    enable = true;
+    shortcut = "t";
+    extraConfig = ''
+	bind h split-window -h
+	bind v split-window -v
+	bind -n M-Left select-pane -L
+	bind -n M-Right select-pane -R
+	bind -n M-Up select-pane -U
+	bind -n M-Down select-pane -D
+	unbind '"'
+	unbind %
+    '';
+    keyMode = "vi";
+  };
 
   programs.ssh = {
     enable = true;
@@ -237,7 +263,7 @@
     riverctl map normal Super Return spawn "kitty"
     riverctl map normal Super D spawn "bemenu-run"
     riverctl map normal Super B spawn "firefox"
-    riverctl map normal Super F12 spawn "swaylock -f -i ${./wallpapers/course_of_the_empire.jpg} -s fill"
+    riverctl map normal Super F12 spawn "swaylock -f -i ${./wallpapers/consummation_of_the_empire.jpg} -s fill"
 
 
     # Media
