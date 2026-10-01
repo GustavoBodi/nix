@@ -11,21 +11,29 @@
   };
 
   outputs =
-    {
-      nixpkgs,
-      home-manager,
-      ...
-    }:
-    {
-      nixosConfigurations.nixos =
+    { nixpkgs, home-manager, ... }:
+
+    let
+      system = "x86_64-linux";
+
+      mkHost = host:
         nixpkgs.lib.nixosSystem {
-          system = "x86_64-linux";
+          inherit system;
 
           modules = [
             home-manager.nixosModules.home-manager
+
+            # Shared by every machine.
             ./configuration.nix
-	    ./hosts/nixos
+
+            # Machine-specific configuration.
+            ./hosts/${host}
           ];
         };
+    in
+    {
+      nixosConfigurations = {
+        nixos = mkHost "nixos";
+      };
     };
 }
