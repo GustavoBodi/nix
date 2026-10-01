@@ -88,7 +88,6 @@
     file
     poppler-utils
     mpv
-    # blender
     wlr-randr
     unar
     swayimg
@@ -115,7 +114,7 @@
     unzip
     zip
     # steam-run
-    # libreoffice
+    libreoffice
     openvpn
     openssl
     fastfetch
@@ -160,7 +159,7 @@
     #   '';
     # })
 
-    # discord
+    discord
 
     (writeShellScriptBin "spotify" ''
       exec ${pkgs.spotify}/bin/spotify \
