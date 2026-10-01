@@ -22,6 +22,11 @@
     let
       system = "x86_64-linux";
 
+      
+      legacyFilesystemHosts = [
+        "nixos"
+      ];
+
       mkHost = host:
         nixpkgs.lib.nixosSystem {
           inherit system;
@@ -30,6 +35,7 @@
             [
               disko.nixosModules.disko
               home-manager.nixosModules.home-manager
+      
               ./configuration.nix
       
               {
@@ -38,6 +44,13 @@
       
               ./hosts/${host}/hardware-configuration.nix
             ]
+      
+            # Existing machines keep their current filesystem configuration.
+            ++ nixpkgs.lib.optional
+              (!(nixpkgs.lib.elem host legacyFilesystemHosts))
+              ./disk-layout/uefi-ext4.nix
+      
+            # Optional machine-specific configuration.
             ++ nixpkgs.lib.optional
               (builtins.pathExists ./hosts/${host}/extra.nix)
               ./hosts/${host}/extra.nix;
