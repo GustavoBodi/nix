@@ -43,9 +43,14 @@
               ./hosts/${host}/extra.nix;
       };
 
-      hosts = {
-        nixos = mkHost "nixos";
-      };
+      hostNames =
+        builtins.attrNames (
+          nixpkgs.lib.filterAttrs
+            (_name: type: type == "directory")
+            (builtins.readDir ./hosts)
+        );
+      
+      hosts = nixpkgs.lib.genAttrs hostNames mkHost;
 
     in
     {
