@@ -197,7 +197,7 @@
   security.auditd.enable = true;
   services.openssh.settings.PasswordAuthentication = false;
   services.openssh.settings.PermitRootLogin = "no";
-  security.lockKernelModules = true;
+  security.lockKernelModules = false;
   security.protectKernelImage = true;
   security.polkit.enable = true;
   boot.kernelModules = [
