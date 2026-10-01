@@ -354,8 +354,29 @@
       nvim-lspconfig
   
       # Compatibility with your pre-26.05 Treesitter config.
-      nvim-treesitter.withAllGrammars
-  
+      (nvim-treesitter.withPlugins (p: with p; [
+       bash
+       c
+       c_sharp
+       cpp
+       css
+       html
+       javascript
+       json
+       lua
+       markdown
+       markdown_inline
+       nix
+       python
+       rust
+       toml
+       tsx
+       typescript
+       vim
+       vimdoc
+       yaml
+      ])) 
+
       nvim-cmp
       cmp-nvim-lsp
   
