@@ -322,8 +322,12 @@
     shellAliases = {
       ll = "ls -l";
       la = "ls -la";
-      rebuild = "nix flake check /etc/nixos && sudo nixos-rebuild switch --flake /etc/nixos#nixos";
-      update = "cd /etc/nixos && sudo nix flake update && nix flake check && sudo nixos-rebuild switch --flake /etc/nixos#nixos";
+    
+      rebuild =
+        "nix flake check /etc/nixos && sudo nixos-rebuild switch --flake /etc/nixos";
+    
+      update =
+        "cd /etc/nixos && sudo nix flake update && nix flake check && sudo nixos-rebuild switch --flake /etc/nixos";
     };
 
     initContent = lib.mkMerge [
