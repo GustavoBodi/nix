@@ -5,10 +5,6 @@
 { config, lib, pkgs, ... }:
 
 {
-  imports =
-    [
-    ];
-
   nixpkgs.config.allowUnfree = true;
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
   nix.settings.sandbox = true;
@@ -80,7 +76,6 @@ virtualisation.docker = {
     '';
   };
 
-  # Configure network connections interactively with nmcli or nmtui.
   networking.networkmanager.enable = true;
 
   networking.nftables.enable = true;
@@ -203,6 +198,9 @@ virtualisation.docker = {
   security.lockKernelModules = true;
   security.protectKernelImage = true;
   security.polkit.enable = true;
+  boot.kernelModules = [
+    "af_packet"
+  ];
 
   services.greetd = {
     enable = true;
@@ -244,6 +242,5 @@ virtualisation.docker = {
   #
   # For more information, see `man configuration.nix` or https://nixos.org/manual/nixos/stable/options#opt-system.stateVersion .
   system.stateVersion = "25.11"; # Did you read the comment?
-
 }
 
