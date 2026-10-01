@@ -19,7 +19,9 @@
   boot.blacklistedKernelModules = [ "pcspkr" ];
   home-manager.useGlobalPkgs = true;
   home-manager.useUserPackages = true;
-  home-manager.users.gustavo = import ./home/gustavo.nix;
+  home-manager.users.gustavo.imports = [
+    ./home/gustavo.nix
+  ];
 
   users.users.gustavo.shell = pkgs.zsh;
   users.mutableUsers = false;

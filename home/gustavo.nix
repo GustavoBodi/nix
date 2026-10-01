@@ -217,29 +217,6 @@
     enable = true;
   };
 
-  services.kanshi = {
-    enable = true;
-    settings = [
-      {
-        profile.name = "dual";
-        profile.outputs = [
-          {
-            criteria = "DP-1";
-            mode = "1920x1080@144.001007Hz";
-            position = "0,0";
-            status = "enable";
-          }
-          {
-            criteria = "HDMI-A-1";
-            transform = "90";
-            position = "1920,0";
-            status = "enable";
-          }
-        ];
-      }
-    ];
-  };
-
   wayland.windowManager.river = {
     enable = true;
     package = null;
@@ -297,7 +274,6 @@
     riverctl map normal Super Period focus-output next
     riverctl map normal Super+Shift Comma send-to-output -current-tags previous
     riverctl map normal Super+Shift Period send-to-output -current-tags next
-    riverctl focus-output DP-1
     riverctl send-layout-cmd rivertile "main-location left"
 
         # Tags 1..9, matching DWM-style behavior
