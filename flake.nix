@@ -52,13 +52,16 @@
       
       hosts = nixpkgs.lib.genAttrs hostNames mkHost;
 
-    in
-    {
-      nixosConfigurations = hosts;
-
-      checks.${system} =
-        nixpkgs.lib.mapAttrs
-          (_name: host: host.config.system.build.toplevel)
-          hosts;
-    };
+      in
+      {
+        nixosConfigurations = hosts;
+      
+        checks.${system} =
+          nixpkgs.lib.mapAttrs
+            (_name: host: host.config.system.build.toplevel)
+            hosts;
+      
+        packages.${system}.disko-install =
+          disko.packages.${system}.disko-install;
+      };
 }
