@@ -66,8 +66,8 @@
   };
 
   home.packages = with pkgs; [
-    prism-model-checker
-    isabelle
+    # prism-model-checker
+    # isabelle
     grim
     slurp
     satty
@@ -88,7 +88,7 @@
     file
     poppler-utils
     mpv
-    blender
+    # blender
     wlr-randr
     unar
     swayimg
@@ -98,9 +98,9 @@
     playerctl
     python3
     kitty
-    jetbrains.webstorm
-    dotnet-sdk_10
-    dotnetCorePackages.sdk_10_0
+    # jetbrains.webstorm
+    # dotnet-sdk_10
+    # dotnetCorePackages.sdk_10_0
     cmake
     gdb
     rtorrent
@@ -115,7 +115,7 @@
     unzip
     zip
     # steam-run
-    libreoffice
+    # libreoffice
     openvpn
     openssl
     fastfetch
@@ -125,22 +125,22 @@
     jq
     yubikey-manager
 
-    (symlinkJoin {
-      name = "rider-steam";
-      paths = [ jetbrains.rider ];
-      buildInputs = [ makeWrapper ];
-      postBuild = ''
-        mv $out/bin/rider $out/bin/.rider-unwrapped
-    
-        cat > $out/bin/rider <<EOF
-        #!/usr/bin/env bash
-        exec ${steam-run}/bin/steam-run \
-          $out/bin/.rider-unwrapped "\$@"
-        EOF
-    
-        chmod +x $out/bin/rider
-      '';
-    })
+    # (symlinkJoin {
+    #   name = "rider-steam";
+    #   paths = [ jetbrains.rider ];
+    #   buildInputs = [ makeWrapper ];
+    #   postBuild = ''
+    #     mv $out/bin/rider $out/bin/.rider-unwrapped
+    # 
+    #     cat > $out/bin/rider <<EOF
+    #     #!/usr/bin/env bash
+    #     exec ${steam-run}/bin/steam-run \
+    #       $out/bin/.rider-unwrapped "\$@"
+    #     EOF
+    # 
+    #     chmod +x $out/bin/rider
+    #   '';
+    # })
 
 
     # (symlinkJoin {
@@ -160,7 +160,7 @@
     #   '';
     # })
 
-    discord
+    # discord
 
     (writeShellScriptBin "spotify" ''
       exec ${pkgs.spotify}/bin/spotify \
