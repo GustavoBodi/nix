@@ -2,7 +2,7 @@
 
 {
   imports = [
-    ./nixos/hardware-configuration.nix
+    ./hardware-configuration.nix
   ];
 
   networking.hostName = "nixos";
@@ -24,6 +24,6 @@
   };
 
   home-manager.users.gustavo.imports = [
-    ../home/desktop.nix
+    ../../home/desktop.nix
   ];
 }
