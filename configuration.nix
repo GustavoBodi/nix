@@ -7,7 +7,6 @@
 {
   imports =
     [
-      ./hardware-configuration.nix
     ];
 
   nixpkgs.config.allowUnfree = true;
@@ -79,8 +78,6 @@ virtualisation.docker = {
     '';
   };
 
-  networking.hostName = "nixos"; # Define your hostname.
-
   # Configure network connections interactively with nmcli or nmtui.
   networking.networkmanager.enable = true;
 
@@ -118,27 +115,6 @@ virtualisation.docker = {
     enable32Bit = true; # Steam, Wine, etc.
   };
 
-  #### NVIDIA driver
-  services.xserver.videoDrivers = [ "nvidia" ];
-
-  hardware.nvidia = {
-    # Use the proprietary driver
-    modesetting.enable = true;
-
-    # Power management (safe defaults)
-    powerManagement.enable = false;
-    powerManagement.finegrained = false;
-
-    # Use open kernel module? (ONLY for Turing+ GPUs)
-    open = false;
-
-    # Enable nvidia-settings GUI
-    nvidiaSettings = true;
-
-    # Driver package (recommended)
-    package = config.boot.kernelPackages.nvidiaPackages.stable;
-  };
-
   users.users.gustavo = {
     isNormalUser = true;
     extraGroups = [ "wheel" "networkmanager" "audio" ];
@@ -152,7 +128,6 @@ virtualisation.docker = {
     enable = true;
     allowReboot = false;
   };
-
 
   services.dbus.enable = true;
   services.libinput.enable = true;

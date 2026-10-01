@@ -346,7 +346,7 @@
     shellAliases = {
       ll = "ls -l";
       la = "ls -la";
-      rebuild = "sudo nixos-rebuild switch";
+      rebuild = "sudo nixos-rebuild switch --flake /etc/nixos#nixos";
     };
 
     initContent = lib.mkMerge [
