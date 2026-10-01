@@ -1,10 +1,6 @@
 { config, ... }:
 
 {
-  imports = [
-    ./hardware-configuration.nix
-  ];
-
   services.xserver.videoDrivers = [ "nvidia" ];
 
   hardware.nvidia = {
@@ -14,7 +10,6 @@
     powerManagement.finegrained = false;
 
     open = false;
-
     nvidiaSettings = true;
 
     package =

@@ -25,18 +25,22 @@
       mkHost = host:
         nixpkgs.lib.nixosSystem {
           inherit system;
-
-          modules = [
-            disko.nixosModules.disko
-            home-manager.nixosModules.home-manager
-            ./configuration.nix
-
-            {
-              networking.hostName = host;
-            }
-
-            ./hosts/${host}
-          ];
+      
+          modules =
+            [
+              disko.nixosModules.disko
+              home-manager.nixosModules.home-manager
+              ./configuration.nix
+      
+              {
+                networking.hostName = host;
+              }
+      
+              ./hosts/${host}/hardware-configuration.nix
+            ]
+            ++ nixpkgs.lib.optional
+              (builtins.pathExists ./hosts/${host}/extra.nix)
+              ./hosts/${host}/extra.nix;
       };
 
       hosts = {
