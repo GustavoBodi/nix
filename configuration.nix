@@ -201,6 +201,7 @@
   security.polkit.enable = true;
   boot.kernelModules = [
     "af_packet"
+    "uas"
   ];
 
   services.greetd = {
