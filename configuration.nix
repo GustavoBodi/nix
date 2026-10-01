@@ -203,6 +203,7 @@
   boot.kernelModules = [
     "af_packet"
     "uas"
+    "iwlwifi"
   ];
 
   services.greetd = {
