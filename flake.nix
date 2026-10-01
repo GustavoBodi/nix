@@ -22,18 +22,21 @@
 
           modules = [
             home-manager.nixosModules.home-manager
-
-            # Shared by every machine.
             ./configuration.nix
-
-            # Machine-specific configuration.
             ./hosts/${host}
           ];
         };
-    in
-    {
-      nixosConfigurations = {
+
+      hosts = {
         nixos = mkHost "nixos";
       };
+    in
+    {
+      nixosConfigurations = hosts;
+
+      checks.${system} =
+        nixpkgs.lib.mapAttrs
+          (_name: host: host.config.system.build.toplevel)
+          hosts;
     };
 }
