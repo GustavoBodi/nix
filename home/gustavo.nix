@@ -109,6 +109,7 @@
     calibre
     killall
     uv
+    usbutils
     # nodejs
     vscode
     unzip
