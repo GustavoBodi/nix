@@ -8,36 +8,23 @@
       url = "github:nix-community/home-manager/release-26.05";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-
   };
 
   outputs =
     {
-      self,
       nixpkgs,
       home-manager,
       ...
     }:
-
-    let
-      system = "x86_64-linux";
-
-    in
     {
       nixosConfigurations.nixos =
         nixpkgs.lib.nixosSystem {
-          inherit system;
-
-          specialArgs = {
-            homeManagerModule =
-              home-manager.nixosModules.home-manager;
-
-          };
+          system = "x86_64-linux";
 
           modules = [
+            home-manager.nixosModules.home-manager
             ./configuration.nix
           ];
         };
     };
 }
-
