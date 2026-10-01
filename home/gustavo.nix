@@ -1,8 +1,6 @@
 { config, pkgs, lib, ... }:
 
 {
-  programs.kitty.enable = true;
-
   programs.waybar = {
     enable = true;
     systemd.enable = true;
@@ -68,10 +66,11 @@
   };
 
   home.packages = with pkgs; [
+    prism-model-checker
+    isabelle
     grim
     slurp
     satty
-    kanshi
 
     (writeShellScriptBin "flameshot" ''
       set -euo pipefail
@@ -86,7 +85,10 @@
         --fullscreen \
         --copy-command "${pkgs.wl-clipboard}/bin/wl-copy --type image/png"
     '')
-    tmux
+    file
+    poppler-utils
+    mpv
+    blender
     wlr-randr
     unar
     swayimg
@@ -96,7 +98,6 @@
     playerctl
     python3
     kitty
-    isabelle
     jetbrains.webstorm
     dotnet-sdk_10
     dotnetCorePackages.sdk_10_0
@@ -107,20 +108,21 @@
     zsh-powerlevel10k
     calibre
     killall
+    uv
     # nodejs
     vscode
     unzip
     zip
     # steam-run
-    docker
     libreoffice
     openvpn
     openssl
-    neofetch
+    fastfetch
     # github-cli
     # azure-cli
     gnumake
     jq
+    yubikey-manager
 
     (symlinkJoin {
       name = "rider-steam";
@@ -172,10 +174,10 @@
     csharp-ls
     pyright
     black
-    nodePackages.typescript
-    nodePackages.typescript-language-server
-    nodePackages.vscode-langservers-extracted
-    nodePackages.prettier
+    typescript
+    typescript-language-server
+    vscode-langservers-extracted
+    prettier
     bash-language-server
     shfmt
     nil
@@ -202,7 +204,7 @@
   
     enableDefaultConfig = false;
   
-    matchBlocks."*" = {
+    settings."*" = {
       forwardAgent = false;
       compression = true;
       serverAliveInterval = 60;
@@ -364,20 +366,28 @@
     defaultEditor = true;
     viAlias = true;
     vimAlias = true;
+  
+    # 26.05 changed these defaults.
+    # Your listed plugins don't require either provider.
+    withRuby = false;
+    withPython3 = false;
+  
+    plugins = with pkgs.vimPlugins; [
+      nvim-lspconfig
+  
+      # Compatibility with your pre-26.05 Treesitter config.
+      nvim-treesitter.withAllGrammars
+  
+      nvim-cmp
+      cmp-nvim-lsp
+  
+      telescope-nvim
+      plenary-nvim
+      telescope-file-browser-nvim
+      toggleterm-nvim
+      bufferline-nvim
+    ];
   };
-
-  programs.neovim.plugins = with pkgs.vimPlugins; [
-    nvim-lspconfig
-    nvim-treesitter.withAllGrammars
-    nvim-cmp
-    cmp-nvim-lsp
-
-    telescope-nvim
-    plenary-nvim
-    telescope-file-browser-nvim
-    toggleterm-nvim
-    bufferline-nvim
-  ];
 
   xdg.configFile."nvim".source = ./nvim;
 

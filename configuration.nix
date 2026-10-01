@@ -6,7 +6,7 @@
 
 {
   imports =
-    [ # Include the results of the hardware scan.
+    [
       ./hardware-configuration.nix
       <home-manager/nixos>
     ];
@@ -26,13 +26,22 @@
   users.users.gustavo.shell = pkgs.zsh;
   users.mutableUsers = false;
 
-  virtualisation.docker.enable = true;
-  virtualisation.docker.rootless.enable = true;
-  virtualisation.docker.rootless.setSocketVariable = true;
-  virtualisation.docker.daemon.settings = {
-    dns = [ "1.1.1.1" "8.8.8.8" ];
+virtualisation.docker = {
+  enable = false;
+
+  rootless = {
+    enable = true;
+    setSocketVariable = true;
+
+    daemon.settings = {
+      dns = [ "1.1.1.1" "8.8.8.8" ];
+    };
   };
 
+  daemon.settings = {
+    dns = [ "1.1.1.1" "8.8.8.8" ];
+  };
+};
   # Use the systemd-boot EFI boot loader.
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
@@ -57,13 +66,19 @@
   systemd.coredump.enable = false;
   programs.firejail.enable = true;
   
-  security.sudo.extraConfig = ''
-    Defaults timestamp_timeout=5
-    Defaults passwd_timeout=1
-    Defaults env_reset
-    Defaults use_pty
-    Defaults logfile=/var/log/sudo.log
-  '';
+  security.sudo = {
+    enable = true;
+    wheelNeedsPassword = true;
+    execWheelOnly = true;
+  
+    extraConfig = ''
+      Defaults timestamp_timeout=5
+      Defaults passwd_timeout=1
+      Defaults env_reset
+      Defaults use_pty
+      Defaults logfile=/var/log/sudo.log
+    '';
+  };
 
   networking.hostName = "nixos"; # Define your hostname.
 
@@ -139,7 +154,6 @@
     allowReboot = false;
   };
 
-  security.sudo.wheelNeedsPassword = true;
 
   services.dbus.enable = true;
   services.libinput.enable = true;
@@ -166,7 +180,7 @@
     grim
     slurp
     pavucontrol
-    helvum
+    crosspipe
     vim
     neovim
     git
@@ -206,7 +220,6 @@
   # Or disable the firewall altogether.
   networking.firewall.enable = true;
   security.apparmor.enable = true;
-  security.sudo.enable = true;
   security.audit.enable = true;
   security.auditd.enable = true;
   services.openssh.settings.PasswordAuthentication = false;

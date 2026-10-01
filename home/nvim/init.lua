@@ -9,11 +9,11 @@ vim.opt.signcolumn = "yes"
 vim.opt.updatetime = 300
 vim.opt.clipboard = "unnamedplus"
 
--- Load modules
-require("keymaps")
-require("bufferline")
-require("treesitter")
-require("lsp")
+-- Load our configuration modules
+require("config.keymaps")
+require("config.bufferline")
+require("config.treesitter")
+require("config.lsp")
 
 local transparent_groups = {
   "Normal",
