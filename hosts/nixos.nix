@@ -2,7 +2,7 @@
 
 {
   imports = [
-    ../hardware-configuration.nix
+    ./nixos/hardware-configuration.nix
   ];
 
   networking.hostName = "nixos";
