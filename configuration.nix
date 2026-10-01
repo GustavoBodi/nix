@@ -22,22 +22,23 @@
   users.users.gustavo.shell = pkgs.zsh;
   users.mutableUsers = false;
 
-virtualisation.docker = {
-  enable = false;
-
-  rootless = {
-    enable = true;
-    setSocketVariable = true;
-
+  virtualisation.docker = {
+    enable = false;
+  
+    rootless = {
+      enable = true;
+      setSocketVariable = true;
+  
+      daemon.settings = {
+        dns = [ "1.1.1.1" "8.8.8.8" ];
+      };
+    };
+  
     daemon.settings = {
       dns = [ "1.1.1.1" "8.8.8.8" ];
     };
   };
 
-  daemon.settings = {
-    dns = [ "1.1.1.1" "8.8.8.8" ];
-  };
-};
   # Use the systemd-boot EFI boot loader.
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;

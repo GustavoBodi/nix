@@ -5,8 +5,6 @@
     ./hardware-configuration.nix
   ];
 
-  networking.hostName = "nixos";
-
   services.xserver.videoDrivers = [ "nvidia" ];
 
   hardware.nvidia = {

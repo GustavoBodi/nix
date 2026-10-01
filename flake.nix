@@ -8,10 +8,16 @@
       url = "github:nix-community/home-manager/release-26.05";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    disko = {
+      url = "github:nix-community/disko/latest";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
   };
 
   outputs =
-    { nixpkgs, home-manager, ... }:
+    { nixpkgs, home-manager, disko, ... }:
 
     let
       system = "x86_64-linux";
@@ -21,15 +27,22 @@
           inherit system;
 
           modules = [
+            disko.nixosModules.disko
             home-manager.nixosModules.home-manager
             ./configuration.nix
+
+            {
+              networking.hostName = host;
+            }
+
             ./hosts/${host}
           ];
-        };
+      };
 
       hosts = {
         nixos = mkHost "nixos";
       };
+
     in
     {
       nixosConfigurations = hosts;
