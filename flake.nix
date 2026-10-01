@@ -11,7 +11,33 @@
 
   };
 
-  outputs = { self, nixpkgs, home-manager, ... }: {
-  };
+  outputs =
+    {
+      self,
+      nixpkgs,
+      home-manager,
+      ...
+    }:
+
+    let
+      system = "x86_64-linux";
+
+    in
+    {
+      nixosConfigurations.nixos =
+        nixpkgs.lib.nixosSystem {
+          inherit system;
+
+          specialArgs = {
+            homeManagerModule =
+              home-manager.nixosModules.home-manager;
+
+          };
+
+          modules = [
+            ./configuration.nix
+          ];
+        };
+    };
 }
 
