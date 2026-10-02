@@ -121,8 +121,8 @@
   users.users.gustavo = {
     isNormalUser = true;
     extraGroups = [ "wheel" "networkmanager" "audio" ];
-      hashedPasswordFile = "/etc/nixos/secrets/gustavo-password.hash";
-      packages = with pkgs; [
+    hashedPasswordFile = lib.mkDefault "/etc/nixos/secrets/gustavo-password.hash";
+    packages = with pkgs; [
       tree
     ];
   };
