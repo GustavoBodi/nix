@@ -6,9 +6,6 @@ DISK="${2:?Usage: $0 <hostname> <disk>}"
 
 cd "$(dirname "$0")"
 
-MAPPER_NAME="cryptroot"
-MAPPER="/dev/mapper/$MAPPER_NAME"
-
 [[ -b "$DISK" ]] || {
   echo "Not a block device: $DISK" >&2
   exit 1
@@ -24,16 +21,22 @@ MAPPER="/dev/mapper/$MAPPER_NAME"
   exit 1
 }
 
-command -v cryptsetup >/dev/null || {
-  echo "cryptsetup is required." >&2
-  exit 1
-}
-
-if [[ -e "$MAPPER" ]]; then
-  echo "$MAPPER already exists." >&2
-  echo "Close the existing mapping before running this installer." >&2
-  exit 1
-fi
+for cmd in \
+  parted \
+  wipefs \
+  partprobe \
+  udevadm \
+  mkfs.fat \
+  mkfs.btrfs \
+  btrfs \
+  nixos-generate-config \
+  nixos-install
+do
+  command -v "$cmd" >/dev/null || {
+    echo "Required command not found: $cmd" >&2
+    exit 1
+  }
+done
 
 echo
 echo "Installing '$HOST' to '$DISK'."
@@ -47,7 +50,7 @@ read -r -p "Continue? [y/N] " answer
 [[ "$answer" =~ ^[Yy]$ ]] || exit 1
 
 #
-# Clean up any previous target mounted at /mnt.
+# Clean up an old installation target, if present.
 #
 sudo umount -R /mnt 2>/dev/null || true
 sudo mkdir -p /mnt
@@ -55,9 +58,18 @@ sudo mkdir -p /mnt
 #
 # Partition layout:
 #
-#   1 GiB EFI System Partition
-#   remaining disk -> LUKS2 -> ext4 -> /persist
+#   partition 1: 1 GiB EFI
+#   partition 2: remaining disk, Btrfs
 #
+# Runtime layout:
+#
+#   tmpfs             /
+#   Btrfs /nix        /nix
+#   Btrfs /home       /home
+#   Btrfs /persist    /persist
+#   vfat              /boot
+#
+
 sudo wipefs -af "$DISK"
 
 sudo parted -s "$DISK" mklabel gpt
@@ -81,8 +93,8 @@ sudo partprobe "$DISK"
 sudo udevadm settle
 
 #
-# Resolve the actual partition device names without assuming
-# /dev/sda1 versus /dev/nvme0n1p1.
+# Resolve the actual partition devices without assuming whether this
+# is /dev/sda, /dev/nvme0n1, etc.
 #
 ESP="$(
   lsblk -nrpo PATH,PARTLABEL "$DISK" |
@@ -95,12 +107,12 @@ SYSTEM="$(
 )"
 
 [[ -n "$ESP" && -b "$ESP" ]] || {
-  echo "Could not find EFI partition." >&2
+  echo "Could not locate the EFI partition." >&2
   exit 1
 }
 
 [[ -n "$SYSTEM" && -b "$SYSTEM" ]] || {
-  echo "Could not find system partition." >&2
+  echo "Could not locate the system partition." >&2
   exit 1
 }
 
@@ -110,108 +122,76 @@ echo "System partition: $SYSTEM"
 echo
 
 #
-# Remove any stale filesystem signatures from the newly-created
-# partitions.
+# Clear stale filesystem signatures from the new partitions.
 #
 sudo wipefs -af "$ESP"
 sudo wipefs -af "$SYSTEM"
 
 #
-# EFI filesystem.
+# Create filesystems.
 #
 sudo mkfs.fat -F 32 "$ESP"
+sudo mkfs.btrfs -f "$SYSTEM"
 
 #
-# Encrypt the persistent system partition.
+# Temporarily mount the Btrfs top-level so we can create subvolumes.
 #
-# cryptsetup will ask for the LUKS passphrase here.
-#
-echo
-echo "Creating LUKS2 encrypted system volume..."
-echo
+sudo mkdir -p /mnt-btrfs
+sudo mount "$SYSTEM" /mnt-btrfs
 
-sudo cryptsetup luksFormat \
-  --type luks2 \
-  "$SYSTEM"
+sudo btrfs subvolume create /mnt-btrfs/nix
+sudo btrfs subvolume create /mnt-btrfs/home
+sudo btrfs subvolume create /mnt-btrfs/persist
 
-echo
-echo "Opening encrypted system volume..."
-echo
-
-sudo cryptsetup open \
-  "$SYSTEM" \
-  "$MAPPER_NAME"
+sudo umount /mnt-btrfs
+sudo rmdir /mnt-btrfs
 
 #
-# Persistent filesystem.
-#
-sudo mkfs.ext4 \
-  -F \
-  -L persist \
-  "$MAPPER"
-
-#
-# The installed machine's real root is tmpfs.
-#
-# This mirrors:
-#
-#   fileSystems."/" = {
-#     fsType = "tmpfs";
-#     options = [ "defaults" "size=25%" "mode=755" ];
-#   };
+# The real root is tmpfs.
 #
 sudo mount \
   -t tmpfs \
   -o size=25%,mode=755 \
-  tmpfs \
+  none \
   /mnt
 
 #
-# Persistent backing filesystem.
+# Create mount points inside the ephemeral root.
 #
-sudo mkdir -p /mnt/persist
-
-sudo mount \
-  "$MAPPER" \
+sudo mkdir -p \
+  /mnt/boot \
+  /mnt/nix \
+  /mnt/home \
   /mnt/persist
 
 #
-# Persistent /nix and /home.
+# Mount persistent Btrfs subvolumes.
 #
-# At runtime these are bind-mounted from:
-#
-#   /persist/nix  -> /nix
-#   /persist/home -> /home
-#
-sudo mkdir -p \
-  /mnt/persist/nix \
-  /mnt/persist/home \
-  /mnt/nix \
-  /mnt/home
-
 sudo mount \
-  --bind \
-  /mnt/persist/nix \
+  -o subvol=/nix,compress=zstd,noatime \
+  "$SYSTEM" \
   /mnt/nix
 
 sudo mount \
-  --bind \
-  /mnt/persist/home \
+  -o subvol=/home,compress=zstd,noatime \
+  "$SYSTEM" \
   /mnt/home
 
-#
-# EFI System Partition.
-#
-sudo mkdir -p /mnt/boot
+sudo mount \
+  -o subvol=/persist,compress=zstd,noatime \
+  "$SYSTEM" \
+  /mnt/persist
 
+#
+# Mount the EFI System Partition.
+#
 sudo mount \
   -o umask=0077 \
   "$ESP" \
   /mnt/boot
 
 #
-# Prepare persistent system state expected by the Impermanence
-# configuration.
+# Prepare persistent state expected by modules/impermanence.nix.
 #
 sudo mkdir -p \
   /mnt/persist/etc \
@@ -223,35 +203,27 @@ sudo install \
   /mnt/persist/etc/NetworkManager/system-connections
 
 #
-# Generate a permanent machine-id directly in persistent storage.
-#
-# Impermanence later exposes this as /etc/machine-id.
+# Generate a persistent machine-id.
 #
 sudo systemd-machine-id-setup \
   --root=/mnt/persist
 
 #
-# Copy the configuration repository to persistent storage.
-#
-# /etc/nixos itself lives on the ephemeral root and will later be
-# supplied by:
-#
-#   environment.persistence."/persist"
+# Copy this repository into persistent storage.
 #
 TARGET_CONFIG="/mnt/persist/etc/nixos"
 
-sudo cp -a \
+sudo cp -aT \
   . \
   "$TARGET_CONFIG"
 
-sudo rm -f \
-  "$TARGET_CONFIG/result"
+sudo rm -f "$TARGET_CONFIG/result"
 
 #
-# Generate hardware-specific configuration.
+# Generate the hardware configuration.
 #
-# Filesystems deliberately aren't generated here; the filesystem
-# topology is supplied declaratively by the NixOS configuration.
+# Filesystems are deliberately excluded because the filesystem layout
+# comes from disk-layout/uefi-impermanent.nix.
 #
 sudo mkdir -p \
   "$TARGET_CONFIG/hosts/$HOST"
@@ -265,12 +237,13 @@ nixos-generate-config \
       >/dev/null
 
 #
-# If this is a Git-backed flake, make sure a newly-created host
-# hardware configuration is visible to future normal Git-flake
-# evaluations.
+# If the copied configuration is a Git repository, try to stage the
+# generated hardware config.
 #
+# This matters because normal Git-backed flake evaluation ignores
+# untracked files.
 #
-# Do NOT add the password hash below to Git.
+# Failure here is not fatal because nixos-install below uses path:.
 #
 if [[ -d "$TARGET_CONFIG/.git" ]]; then
   if ! git -C "$TARGET_CONFIG" \
@@ -288,10 +261,6 @@ fi
 
 #
 # Create the immutable user's password hash.
-#
-# The NixOS configuration reads:
-#
-#   /persist/etc/nixos/secrets/gustavo-password.hash
 #
 tmp_hash="$(mktemp)"
 
@@ -326,14 +295,51 @@ sudo install \
   "$TARGET_CONFIG/secrets/gustavo-password.hash"
 
 #
-# Install directly into /mnt/nix/store.
+# During nixos-install, make the persistent directories visible at
+# the same locations they will have after boot.
 #
-# Because /mnt/nix is a bind mount of /mnt/persist/nix,
-# the Nix store goes directly to persistent storage instead
-# of filling the live installer ISO's store.
+# This ensures activation-time state is written to persistent storage
+# rather than being lost with the installation tmpfs.
 #
-# Using path: is intentional: it includes the freshly-generated
-# hardware configuration even if it has not yet been committed.
+sudo mkdir -p \
+  /mnt/etc/nixos \
+  /mnt/var/lib/nixos \
+  /mnt/etc/NetworkManager/system-connections
+
+sudo mount \
+  --bind \
+  /mnt/persist/etc/nixos \
+  /mnt/etc/nixos
+
+sudo mount \
+  --bind \
+  /mnt/persist/var/lib/nixos \
+  /mnt/var/lib/nixos
+
+sudo mount \
+  --bind \
+  /mnt/persist/etc/NetworkManager/system-connections \
+  /mnt/etc/NetworkManager/system-connections
+
+#
+# Also expose the persistent machine-id during installation.
+#
+sudo touch /mnt/etc/machine-id
+
+sudo mount \
+  --bind \
+  /mnt/persist/etc/machine-id \
+  /mnt/etc/machine-id
+
+#
+# Install NixOS.
+#
+# /mnt/nix is an actual persistent Btrfs subvolume, so the Nix store
+# is written directly to disk instead of consuming space in the live
+# installer's Nix store.
+#
+# path: is intentional: the freshly generated hardware configuration
+# can be evaluated even if it has not been committed yet.
 #
 sudo nixos-install \
   --root /mnt \
@@ -344,14 +350,16 @@ sudo nixos-install \
 echo
 echo "Installation complete."
 echo
-echo "Installed layout:"
+echo "Installed filesystem layout:"
 echo
 echo "  /         tmpfs"
-echo "  /boot     $ESP"
-echo "  /persist  $MAPPER"
-echo "  /nix      /persist/nix"
-echo "  /home     /persist/home"
+echo "  /boot     vfat on $ESP"
+echo "  /nix      Btrfs subvolume /nix"
+echo "  /home     Btrfs subvolume /home"
+echo "  /persist  Btrfs subvolume /persist"
 echo
-echo "The persistent system partition is protected by LUKS2."
+echo "Configuration:"
+echo "  /persist/etc/nixos"
+echo "  -> exposed as /etc/nixos by Impermanence"
 echo
 echo "Reboot when ready."

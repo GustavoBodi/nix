@@ -5,8 +5,8 @@
     disk.main = {
       type = "disk";
 
-      # Overridden by:
-      # --disk main /dev/...
+      # Overridden during installation with:
+      #   --disk main /dev/...
       device = "/dev/disk/by-id/REPLACE-ME";
 
       content = {
@@ -32,41 +32,35 @@
             size = "100%";
 
             content = {
-              type = "luks";
-              name = "cryptroot";
-              askPassword = true;
+              type = "btrfs";
+              extraArgs = [ "-f" ];
 
-              content = {
-                type = "btrfs";
-                extraArgs = [ "-f" ];
+              subvolumes = {
+                "/nix" = {
+                  mountpoint = "/nix";
 
-                subvolumes = {
-                  "/nix" = {
-                    mountpoint = "/nix";
+                  mountOptions = [
+                    "compress=zstd"
+                    "noatime"
+                  ];
+                };
 
-                    mountOptions = [
-                      "compress=zstd"
-                      "noatime"
-                    ];
-                  };
+                "/home" = {
+                  mountpoint = "/home";
 
-                  "/home" = {
-                    mountpoint = "/home";
+                  mountOptions = [
+                    "compress=zstd"
+                    "noatime"
+                  ];
+                };
 
-                    mountOptions = [
-                      "compress=zstd"
-                      "noatime"
-                    ];
-                  };
+                "/persist" = {
+                  mountpoint = "/persist";
 
-                  "/persist" = {
-                    mountpoint = "/persist";
-
-                    mountOptions = [
-                      "compress=zstd"
-                      "noatime"
-                    ];
-                  };
+                  mountOptions = [
+                    "compress=zstd"
+                    "noatime"
+                  ];
                 };
               };
             };
