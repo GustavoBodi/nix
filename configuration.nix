@@ -36,9 +36,6 @@
       };
     };
   
-    daemon.settings = {
-      dns = [ "1.1.1.1" "8.8.8.8" ];
-    };
   };
 
   # Use the systemd-boot EFI boot loader.
@@ -136,6 +133,7 @@
   };
 
   services.dbus.enable = true;
+  services.dbus.apparmor = "enabled";
   services.libinput.enable = true;
 
   # Sound

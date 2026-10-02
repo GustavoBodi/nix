@@ -146,10 +146,13 @@ in
       package = pkgs.rtorrent;
     })
 
-    (firejailWrap {
-      name = "firefox";
-      package = pkgs.firefox;
-    })
+    (writeShellScriptBin "firefox" ''
+      exec /run/wrappers/bin/firejail \
+        --ignore=nou2f \
+        --ignore=private-dev \
+        --profile=${pkgs.firejail}/etc/firejail/firefox.profile \
+        -- ${pkgs.firefox}/bin/firefox "$@"
+    '')
 
     (firejailWrap {
       name = "unzip";
@@ -297,7 +300,7 @@ in
   wayland.windowManager.river = {
     enable = true;
     package = null;
-    xwayland.enable = true;
+    xwayland.enable = false;
     systemd.enable = true;
   
   extraConfig = ''
