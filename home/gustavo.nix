@@ -112,7 +112,7 @@ in
     # dotnetCorePackages.sdk_10_0
     cmake
     gdb
-    rtorrent
+
     (writeShellScriptBin "zathura" ''
       exec /run/wrappers/bin/firejail \
         --profile=${pkgs.firejail}/etc/firejail/zathura.profile \
@@ -139,6 +139,11 @@ in
       name = "code";
       package = pkgs.vscode;
       profile = "code.profile";
+    })
+
+    (firejailWrap {
+      name = "rtorrent";
+      package = pkgs.rtorrent;
     })
 
     (firejailWrap {

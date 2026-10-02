@@ -199,7 +199,7 @@
   # Or disable the firewall altogether.
   networking.firewall.enable = true;
   security.forcePageTableIsolation = true;
-  boot.kernel.sysctl."kernel.io_uring_disabled" = 1;
+  boot.kernel.sysctl."kernel.io_uring_disabled" = 2;
   boot.kernelParams = [
     "slab_nomerge"
 
