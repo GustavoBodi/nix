@@ -87,7 +87,6 @@
     '')
     file
     poppler-utils
-    mpv
     wlr-randr
     unar
     swayimg
@@ -103,9 +102,24 @@
     cmake
     gdb
     rtorrent
-    zathura
+    (writeShellScriptBin "zathura" ''
+      exec /run/wrappers/bin/firejail \
+        --profile=${pkgs.firejail}/etc/firejail/zathura.profile \
+        -- ${pkgs.zathura}/bin/zathura "$@"
+    '')
+
+    (writeShellScriptBin "mpv" ''
+      exec /run/wrappers/bin/firejail \
+        --profile=${pkgs.firejail}/etc/firejail/mpv.profile \
+        -- ${pkgs.mpv}/bin/mpv "$@"
+    '')
+
+    (writeShellScriptBin "calibre" ''
+      exec /run/wrappers/bin/firejail \
+        --profile=${pkgs.firejail}/etc/firejail/calibre.profile \
+        -- ${pkgs.calibre}/bin/calibre "$@"
+    '')
     zsh-powerlevel10k
-    calibre
     killall
     uv
     usbutils
@@ -114,7 +128,13 @@
     unzip
     zip
     # steam-run
-    libreoffice
+    (writeShellScriptBin "libreoffice" ''
+      exec /run/wrappers/bin/firejail \
+        --profile=${pkgs.firejail}/etc/firejail/libreoffice.profile \
+        --nou2f \
+        -- ${pkgs.libreoffice}/bin/libreoffice \
+          "$@"
+    '')
     openvpn
     openssl
     fastfetch
@@ -159,13 +179,20 @@
     #   '';
     # })
 
-    discord
-
     (writeShellScriptBin "spotify" ''
-      exec ${pkgs.spotify}/bin/spotify \
-        --enable-features=UseOzonePlatform \
-        --ozone-platform=wayland \
-        "$@"
+      exec /run/wrappers/bin/firejail \
+        --profile=${pkgs.firejail}/etc/firejail/spotify.profile \
+        --nou2f \
+        -- ${pkgs.spotify}/bin/spotify \
+          "$@"
+    '')
+
+    (writeShellScriptBin "discord" ''
+      exec /run/wrappers/bin/firejail \
+        --profile=${pkgs.firejail}/etc/firejail/discord.profile \
+        --nou2f \
+        --deterministic-shutdown \
+        -- ${pkgs.discord}/bin/Discord "$@"
     '')
 
     # Neovim

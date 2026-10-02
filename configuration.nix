@@ -12,6 +12,8 @@
   nix.settings.trusted-users = [ "root" ];
   nix.settings.auto-optimise-store = true;
 
+  boot.loader.systemd-boot.editor = false;
+  services.fwupd.enable = true;
   boot.blacklistedKernelModules = [ "pcspkr" ];
   home-manager.useGlobalPkgs = true;
   home-manager.useUserPackages = true;
@@ -48,6 +50,8 @@
     "kernel.dmesg_restrict" = 1;
     "fs.protected_fifos" = 2;
     "fs.protected_regular" = 2;
+    "fs.protected_hardlinks" = 1;
+    "fs.protected_symlinks" = 1;
     "kernel.unprivileged_bpf_disabled" = 1;
     "kernel.perf_event_paranoid" = 3;
     "kernel.yama.ptrace_scope" = 2;
@@ -58,6 +62,9 @@
     "net.ipv4.tcp_syncookies" = 1;
     "net.ipv6.conf.all.accept_redirects" = 0;
     "net.ipv6.conf.default.accept_redirects" = 0;
+    "net.core.bpf_jit_enable" = 0;
+    "kernel.ftrace_enabled" = 0;
+    "vm.unprivileged_userfaultfd" = 0;
   };
   
   systemd.coredump.enable = false;
@@ -78,9 +85,9 @@
   };
 
   networking.networkmanager.enable = true;
-  programs.nm-applet.enable = true;
-
+  networking.firewall.allowPing = false;
   networking.nftables.enable = true;
+  programs.nm-applet.enable = true;
 
   time.timeZone = "America/Sao_Paulo";
 
@@ -124,7 +131,7 @@
   };
 
   system.autoUpgrade = {
-    enable = true;
+    enable = false;
     allowReboot = false;
   };
 
@@ -192,7 +199,20 @@
   # networking.firewall.allowedUDPPorts = [ ... ];
   # Or disable the firewall altogether.
   networking.firewall.enable = true;
+  security.forcePageTableIsolation = true;
+  boot.kernel.sysctl."kernel.io_uring_disabled" = 1;
+  boot.kernelParams = [
+    "slab_nomerge"
+
+    "page_alloc.shuffle=1"
+
+    "init_on_free=1"
+
+    "debugfs=off"
+  ];
+
   security.apparmor.enable = true;
+  security.apparmor.killUnconfinedConfinables = true;
   security.audit.enable = true;
   security.auditd.enable = true;
   services.openssh.settings.PasswordAuthentication = false;
@@ -214,7 +234,7 @@
     "uas"
 
     "usbhid"
-    "usb_generic"
+    "hid_generic"
   ];
 
   services.greetd = {
