@@ -212,6 +212,9 @@
     "af_packet"
     "usb_storage"
     "uas"
+
+    "usbhid"
+    "usb_generic"
   ];
 
   services.greetd = {
