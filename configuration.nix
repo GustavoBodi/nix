@@ -164,7 +164,6 @@
     vim
     neovim
     git
-    firefox
     kitty
     direnv
   ];
@@ -182,7 +181,7 @@
 
   programs.river-classic = {
     enable = true;
-    xwayland.enable = true;
+    xwayland.enable = false;
   };
 
   xdg.portal = {

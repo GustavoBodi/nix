@@ -147,6 +147,11 @@ in
     })
 
     (firejailWrap {
+      name = "firefox";
+      package = pkgs.firefox;
+    })
+
+    (firejailWrap {
       name = "unzip";
       package = pkgs.unzip;
     })
