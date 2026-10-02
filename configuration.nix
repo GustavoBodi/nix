@@ -197,13 +197,21 @@
   security.auditd.enable = true;
   services.openssh.settings.PasswordAuthentication = false;
   services.openssh.settings.PermitRootLogin = "no";
-  security.lockKernelModules = false;
+  security.lockKernelModules = true;
   security.protectKernelImage = true;
   security.polkit.enable = true;
   boot.kernelModules = [
-    "af_packet"
-    "uas"
     "iwlwifi"
+    "iwlmvm"
+
+    "ccm"
+    "ctr"
+    "cmac"
+    "gcm"
+
+    "af_packet"
+    "usb_storage"
+    "uas"
   ];
 
   services.greetd = {
