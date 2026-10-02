@@ -284,12 +284,21 @@ in
   
     enableDefaultConfig = false;
   
-    settings."*" = {
-      forwardAgent = false;
-      compression = true;
-      serverAliveInterval = 60;
-      serverAliveCountMax = 3;
-      hashKnownHosts = true;
+    settings = {
+      "*" = {
+        ForwardAgent = false;
+        Compression = true;
+        ServerAliveInterval = 60;
+        ServerAliveCountMax = 3;
+        HashKnownHosts = true;
+      };
+
+      "github.com" = {
+        User = "git";
+        IdentityFile = "~/.ssh/yubikey";
+        IdentitiesOnly = true;
+        IdentityAgent = "none";
+      };
     };
   };
 
