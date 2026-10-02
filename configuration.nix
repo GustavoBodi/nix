@@ -166,7 +166,6 @@
     git
     firefox
     kitty
-    wget
     direnv
   ];
 

@@ -1,5 +1,19 @@
 { config, pkgs, lib, ... }:
 
+let 
+  firejailWrap =
+    {
+      name,
+      package,
+      binary ? name,
+      profile ? "${name}.profile",
+    }:
+    lib.hiPrio (pkgs.writeShellScriptBin name ''
+      exec /run/wrappers/bin/firejail \
+        --profile=${pkgs.firejail}/etc/firejail/${profile} \
+        -- ${package}/bin/${binary} "$@"
+    '');
+in
 {
   programs.waybar = {
     enable = true;
@@ -85,10 +99,7 @@
         --fullscreen \
         --copy-command "${pkgs.wl-clipboard}/bin/wl-copy --type image/png"
     '')
-    file
-    poppler-utils
     wlr-randr
-    unar
     swayimg
     swaybg
     swaylock
@@ -124,8 +135,37 @@
     uv
     usbutils
     # nodejs
-    vscode
-    unzip
+    (firejailWrap {
+      name = "code";
+      package = pkgs.vscode;
+      profile = "code.profile";
+    })
+
+    (firejailWrap {
+      name = "unzip";
+      package = pkgs.unzip;
+    })
+
+    (firejailWrap {
+      name = "unar";
+      package = pkgs.unar;
+    })
+
+    (firejailWrap {
+      name = "file";
+      package = pkgs.file;
+    })
+
+    (firejailWrap {
+      name = "pdftotext";
+      package = pkgs.poppler-utils;
+    })
+
+    (firejailWrap {
+      name = "wget";
+      package = pkgs.wget;
+    })
+
     zip
     # steam-run
     (writeShellScriptBin "libreoffice" ''
