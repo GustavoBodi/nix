@@ -326,6 +326,7 @@ in
 
     swaybg -i ${./wallpapers/course_of_the_empire.jpg} -m fill &
     mako &
+    ${pkgs.polkit_gnome}/libexec/polkit-gnome-authentication-agent-1 &
 
     # Applications
     riverctl map normal Super Return spawn "kitty"

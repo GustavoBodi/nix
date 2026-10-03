@@ -150,8 +150,10 @@
   };
 
   services.pulseaudio.enable = false;
+  services.udisks2.enable = true;
 
   environment.systemPackages = with pkgs; [
+    polkit_gnome
     bemenu
     wl-clipboard
     mako
