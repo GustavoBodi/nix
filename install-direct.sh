@@ -228,7 +228,7 @@ sudo rm -f "$TARGET_CONFIG/result"
 sudo mkdir -p \
   "$TARGET_CONFIG/hosts/$HOST"
 
-nixos-generate-config \
+sudo "$(command -v nixos-generate-config)" \
   --root /mnt \
   --no-filesystems \
   --show-hardware-config \
