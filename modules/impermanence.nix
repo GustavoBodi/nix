@@ -49,6 +49,7 @@
         ".config/Code"
         ".vscode"
 
+        ".local/state/wireplumber"
         {
           directory = ".ssh";
           mode = "0700";
