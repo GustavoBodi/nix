@@ -378,6 +378,12 @@ in
   '';
   };
 
+  xdg.userDirs = {
+    enable = true;
+    createDirectories = false;
+    download = "$HOME/downloads";
+  };
+
   xdg.configFile = {
     "kitty/kitty.conf".source = ./kitty/kitty.conf;
     "kitty/current-theme.conf".source = ./kitty/current-theme.conf;

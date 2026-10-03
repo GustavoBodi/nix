@@ -140,7 +140,6 @@ sudo mkdir -p /mnt-btrfs
 sudo mount "$SYSTEM" /mnt-btrfs
 
 sudo btrfs subvolume create /mnt-btrfs/nix
-sudo btrfs subvolume create /mnt-btrfs/home
 sudo btrfs subvolume create /mnt-btrfs/persist
 
 sudo umount /mnt-btrfs
@@ -173,14 +172,15 @@ sudo mount \
   /mnt/nix
 
 sudo mount \
-  -o subvol=/home,compress=zstd,noatime \
-  "$SYSTEM" \
-  /mnt/home
-
-sudo mount \
   -o subvol=/persist,compress=zstd,noatime \
   "$SYSTEM" \
   /mnt/persist
+
+sudo mount \
+  -t tmpfs \
+  -o defaults,mode=755 \
+  none \
+  /mnt/home
 
 #
 # Mount the EFI System Partition.
