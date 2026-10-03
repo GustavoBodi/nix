@@ -413,11 +413,12 @@ in
       ll = "ls -l";
       la = "ls -la";
     
-      rebuild =
-        "nix flake check /etc/nixos && sudo nixos-rebuild switch --flake /etc/nixos";
-    
-      update =
-        "cd /etc/nixos && sudo nix flake update && nix flake check && sudo nixos-rebuild switch --flake /etc/nixos";
+      rebuild = "sudo nixos-rebuild switch --flake /etc/nixos#$(hostname)"; 
+
+      check = "nix flake check --no-build /etc/nixos";
+
+      update = "cd /etc/nixos && sudo nix flake update && nix flake check && sudo nixos-rebuild switch --flake /etc/nixos#$(hostname)";
+
     };
 
     initContent = lib.mkMerge [
